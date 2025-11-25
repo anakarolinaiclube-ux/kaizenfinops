@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaizen - Mapa Financeiro-Operacional</title>
+    
+    <!-- Fonte Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS (Estrutura) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome (Ícones) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Palette Configuration */
+            --bg-color: #F5F7FA;          
+            --primary-dark: #0A2342;      
+            --primary-soft: #2E4A68;      
+            
+            /* Primary Button / Highlights */
+            --btn-main-bg: #CC4C00;
+            --btn-main-hover: #E65D00;
+            --btn-text: #FFFFFF;
+
+            /* Secondary Button Logic */
+            --btn-sec-border: #0A2342;
+            --btn-sec-text: #0A2342;
+            --btn-sec-hover-bg: rgba(10, 35, 66, 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-dark);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* -----------------------------------------------------------
+           BACKGROUND (MANTIDO)
+        ----------------------------------------------------------- */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.8) 0%, transparent 100%);
+        }
+
+        .bg-element {
+            position: absolute;
+            color: var(--primary-soft);
+            opacity: 0.09; 
+            will-change: transform;
+        }
+
+        @keyframes hoverShake {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(2px, -12px) rotate(3deg); }
+            50% { transform: translate(0, -3px) rotate(0deg); }
+            75% { transform: translate(-2px, 8px) rotate(-3deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        @keyframes softPulse {
+            0%, 100% { opacity: 0.05; }
+            50% { opacity: 0.15; }
+        }
+
+        .floater {
+            animation: hoverShake ease-in-out infinite;
+        }
+
+        .time-1 { animation-duration: 5s; }
+        .time-2 { animation-duration: 7s; }
+        .time-3 { animation-duration: 6s; }
+        .time-4 { animation-duration: 8s; }
+
+        .route-line {
+            position: absolute;
+            height: 1px;
+            background: repeating-linear-gradient(to right, var(--primary-soft) 0, var(--primary-soft) 5px, transparent 5px, transparent 15px);
+            width: 100%;
+            animation: softPulse 6s ease-in-out infinite;
+        }
+        
+        /* -----------------------------------------------------------
+           ESTILOS GERAIS
+        ----------------------------------------------------------- */
+
+        .timeline-container {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 0;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: repeating-linear-gradient(to bottom, #cbd5e1 0, #cbd5e1 10px, transparent 10px, transparent 20px);
+            transform: translateX(-50%);
+            z-index: 0;
+        }
+
+        .timeline-step {
+            position: relative;
+            margin-bottom: 60px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-step:hover .step-icon {
+            transform: scale(1.2);
+            background-color: var(--btn-main-hover);
+            color: var(--btn-text);
+            border-color: var(--btn-main-hover);
+            box-shadow: 0 0 15px rgba(230, 93, 0, 0.4);
+        }
+
+        .timeline-step:hover .step-card {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(10, 35, 66, 0.15);
+            border-left-color: var(--btn-main-hover);
+        }
+
+        .timeline-step:hover .step-card.step-left {
+             border-right-color: var(--btn-main-hover);
+             border-left-color: transparent;
+        }
+        
+        .timeline-step:hover .step-card.step-right {
+             border-left-color: var(--btn-main-hover);
+        }
+
+        .step-icon {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            background-color: white;
+            border: 3px solid var(--btn-main-bg);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            color: var(--btn-main-bg);
+            transition: all 0.3s ease;
+        }
+
+        .step-card {
+            width: 40%;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .step-left { margin-right: auto; margin-left: 5%; text-align: right; border-right: 4px solid transparent; border-left: none; }
+        .step-right { margin-left: auto; margin-right: 5%; text-align: left; border-left: 4px solid transparent; }
+        
+        .step-card h3 { color: var(--primary-dark); }
+        .step-card p { color: var(--primary-soft); }
+        .step-card span { color: var(--btn-main-bg); }
+
+        @media (max-width: 768px) {
+            .timeline-line { left: 30px; }
+            .step-icon { left: 30px; }
+            .step-card { width: 75%; margin-left: 80px !important; margin-right: 0 !important; text-align: left !important; }
+            .step-left { border-right: none; border-left: 4px solid transparent; }
+            
+            .timeline-step:hover .step-card.step-left {
+                border-right-color: transparent;
+                border-left-color: var(--btn-main-hover);
+            }
+        }
+
+        /* MODAL */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 35, 66, 0.85);
+            z-index: 50;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal-backdrop.active { display: flex; opacity: 1; }
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            border-top: 6px solid var(--btn-main-bg);
+        }
+        .modal-backdrop.active .modal-content { transform: translateY(0); }
+
+        .tab-active {
+            background-color: var(--btn-main-bg);
+            color: var(--btn-text);
+            border: 1px solid var(--btn-main-bg);
+        }
+        .tab-active:hover {
+            background-color: var(--btn-main-hover);
+            border-color: var(--btn-main-hover);
+        }
+
+        .tab-inactive {
+            background-color: transparent;
+            color: var(--btn-sec-text);
+            border: 1px solid var(--btn-sec-border);
+        }
+        .tab-inactive:hover {
+            background-color: var(--btn-sec-hover-bg);
+            color: var(--btn-sec-text);
+        }
+
+        .btn-primary {
+            background-color: var(--btn-main-bg);
+            color: var(--btn-text);
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover { background-color: var(--btn-main-hover); }
+
+        .text-main { color: var(--primary-dark); }
+        .text-soft { color: var(--primary-soft); }
+        .text-highlight { color: var(--btn-main-bg); }
+
+        /* Estilos dos inputs do gerador */
+        .gen-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: var(--primary-soft);
+            margin-top: 4px;
+        }
+        .gen-input:focus {
+            border-color: var(--btn-main-bg);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(204, 76, 0, 0.1);
+        }
+        .gen-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Background Animado -->
+    <div class="animated-bg">
+        <div class="route-line" style="top: 20%; opacity: 0.1;"></div>
+        <div class="route-line" style="top: 50%; opacity: 0.05;"></div>
+        <div class="route-line" style="bottom: 25%; opacity: 0.08;"></div>
+        <i class="fas fa-ship bg-element floater time-1" style="top: 10%; left: 8%; font-size: 3rem;"></i>
+        <i class="fas fa-cube bg-element floater time-2" style="top: 15%; right: 10%; font-size: 2.5rem;"></i>
+        <i class="fas fa-anchor bg-element floater time-3" style="top: 45%; left: 15%; font-size: 2rem;"></i>
+        <i class="fas fa-globe-americas bg-element floater time-4" style="top: 55%; right: 18%; font-size: 4rem; opacity: 0.05;"></i>
+        <i class="fas fa-boxes-stacked bg-element floater time-2" style="bottom: 15%; left: 10%; font-size: 2.2rem;"></i>
+        <i class="fas fa-ship bg-element floater time-1" style="bottom: 10%; right: 8%; font-size: 1.8rem;"></i>
+        <i class="fas fa-water bg-element floater time-3" style="top: 30%; left: 50%; font-size: 1.5rem; opacity: 0.05;"></i>
+    </div>
+
+    <!-- Cabeçalho -->
+    <header class="text-center py-10 px-4 relative z-10">
+        <h1 class="text-4xl font-bold tracking-tight mb-2 text-main">KAIZEN</h1>
+        <p class="text-lg font-light text-soft">Mapa Financeiro-Operacional</p>
+    </header>
+
+    <!-- Navegação de Abas -->
+    <div class="flex justify-center gap-4 mb-8 px-4 relative z-10">
+        <button onclick="switchTab('bbk')" id="btn-bbk" class="px-8 py-3 rounded-full font-semibold transition-all duration-300 shadow-md tab-active">
+            <i class="fas fa-scroll mr-2"></i> Bobinas (BBK)
+        </button>
+        <button onclick="switchTab('fcl')" id="btn-fcl" class="px-8 py-3 rounded-full font-semibold transition-all duration-300 shadow-md tab-inactive">
+            <i class="fas fa-container-storage mr-2"></i> Container (FCL)
+        </button>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <main id="timeline-wrapper" class="timeline-container relative z-10">
+        <div class="timeline-line"></div>
+        <div id="content-area"></div>
+    </main>
+
+    <!-- Modal -->
+    <div id="modal" class="modal-backdrop" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-300 hover:text-red-500 text-2xl transition">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="flex items-center gap-3 mb-6 text-highlight">
+                <i id="modal-icon" class="fas fa-info-circle text-2xl"></i>
+                <h3 id="modal-title" class="text-2xl font-bold text-main">Título da Etapa</h3>
+            </div>
+            
+            <div id="modal-body-container">
+                <!-- Conteúdo injetado via JS -->
+            </div>
+
+            <div class="mt-8 text-right">
+                <button onclick="closeModal()" class="px-6 py-2 rounded btn-primary">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ---------------------------------------------------------
+        // DADOS COM GERADORES DE EMAIL AUTOMÁTICOS
+        // ---------------------------------------------------------
+        
+        // --- ROTA BBK (Bobinas) ---
+        const dataBBK = [
+            {
+                title: "Pedido aprovado",
+                shortDesc: "Início do processo.",
+                icon: "fa-check-circle",
+                procedimento: "Verificar condições comerciais iniciais.",
+                generator: null // Nenhum email
+            },
+            {
+                title: "PI validada pelo operacional",
+                shortDesc: "Validação interna.",
+                icon: "fa-file-signature",
+                procedimento: "Operacional valida NCM, descrição e valores.",
+                generator: {
+                    fields: [
+                        { id: 'cli_name', label: 'Nome do Cliente' },
+                        { id: 'pi_num', label: 'Número da PI' }
+                    ],
+                    template: (d) => `Assunto: Validação PI ${d.pi_num} - ${d.cli_name}\n\nPrezado(a),\n\nSegue anexa a Proforma Invoice nº ${d.pi_num} validada para sua conferência e assinatura.\n\nPor favor, nos devolva assinada para prosseguirmos com o fechamento do câmbio inicial.\n\nAtenciosamente,\nEquipe Kaizen`
+                }
+            },
+            {
+                title: "Câmbio 01 pago",
+                shortDesc: "Pagamento inicial ao fornecedor.",
+                icon: "fa-money-bill-wave",
+                procedimento: "Financeiro confirma swift comprovante.",
+                generator: {
+                    fields: [
+                        { id: 'supp_name', label: 'Nome do Fornecedor' },
+                        { id: 'pi_num', label: 'Referência PI/PO' }
+                    ],
+                    template: (d) => `Subject: Payment Confirmation - Ref ${d.pi_num}\n\nDear ${d.supp_name},\n\nPlease find attached the swift copy regarding the down payment for Ref ${d.pi_num}.\n\nKindly confirm receipt and estimated readiness date.\n\nBest regards,\nKaizen Team`
+                }
+            },
+            {
+                title: "Aguardando embarque",
+                shortDesc: "Preparação para transporte.",
+                icon: "fa-clock",
+                procedimento: "Monitorar prontidão da carga.",
+                generator: {
+                    fields: [
+                        { id: 'broker_name', label: 'Corretora de Seguros' },
+                        { id: 'po_ref', label: 'Referência do Pedido' }
+                    ],
+                    template: (d) => `Assunto: Cotação de Seguro - Pedido ${d.po_ref}\n\nOlá ${d.broker_name},\n\nSeguem anexa a planilha de cotação e a Proforma para emissão da apólice referente ao pedido ${d.po_ref}.\n\nAguardamos a minuta.\n\nGrato,\nEquipe Kaizen`
+                }
+            },
+            {
+                title: "Navio embarcou",
+                shortDesc: "Carga em trânsito.",
+                icon: "fa-ship",
+                procedimento: "Rastreamento do navio iniciado.",
+                generator: {
+                    fields: [
+                        { id: 'cli_name', label: 'Nome do Cliente' },
+                        { id: 'eta_date', label: 'Data Estimada (ETA)' },
+                        { id: 'cambio2_val', label: 'Valor Estimado Câmbio 2' }
+                    ],
+                    template: (d) => `Assunto: Aviso de Embarque e Previsão de Numerário\n\nPrezado ${d.cli_name},\n\nSua carga embarcou! A previsão de chegada (ETA) é ${d.eta_date}.\n\nPor favor, programem seu fluxo de caixa para o fechamento do segundo câmbio (aprox. ${d.cambio2_val}) e custos de nacionalização.\n\nAtenciosamente,\nEquipe Kaizen`
+                }
+            },
+            {
+                title: "HBL recebido",
+                shortDesc: "Documentação de embarque.",
+                icon: "fa-file-import",
+                procedimento: "Conferência dos dados do BL.",
+                generator: {
+                    fields: [
+                        { id: 'cli_name', label: 'Nome do Cliente' },
+                        { id: 'inv_num', label: 'Invoice Nº' }
+                    ],
+                    template: (d) => `Assunto: Fechamento de Câmbio 2 - Invoice ${d.inv_num}\n\nPrezado ${d.cli_name},\n\nRecebemos o HBL. Segue anexa a Invoice ${d.inv_num} para autorização do fechamento de câmbio final.\n\nFicamos no aguardo.\n\nAtenciosamente,\nEquipe Kaizen`
+                }
+            },
+            {
+                title: "Prestes a atracar",
+                shortDesc: "Chegada iminente.",
+                icon: "fa-anchor",
+                procedimento: "Preparar pagamentos portuários.",
+                generator: {
+                    fields: [
+                        { id: 'cli_name', label: 'Nome do Cliente' },
+                        { id: 'bl_num', label: 'Número do BL' }
+                    ],
+                    template: (d) => `Assunto: Solicitação de Numerário - Porto/BL\n\nOlá ${d.cli_name},\n\nO navio está prestes a atracar. Seguem os valores para pagamento do Operador Portuário e Taxa de Liberação do BL ${d.bl_num}.\n\nFavor enviar comprovantes até amanhã.\n\nGrato,\nEquipe Kaizen`
+                }
+            },
+            {
+                title: "Presença de carga confirmada",
+                shortDesc: "Confirmação no porto.",
+                icon: "fa-boxes-stacked",
+                procedimento: "Sistema Mantra/Siscarga atualizado.",
+                generator: {
+                    fields: [
+                        { id: 'cli_name', label: 'Nome do Cliente' },
+                        { id: 'valor_impostos', label: 'Valor Impostos (R$)' }
+                    ],
+                    template: (d) => `Assunto: Presença de Carga Confirmada - Pagamento de Impostos\n\nPrezado ${d.cli_name},\n\nA presença de carga foi confirmada. O valor para registro da DI e impostos é de R$ ${d.valor_impostos}.\n\nFavor depositar na conta informada para prosseguirmos com o desembaraço.\n\nAtenciosamente,\nEquipe Kaizen`
+                }
+            },
+            {
+                title: "Carga liberada",
+                shortDesc: "Liberação alfandegária.",
+                icon: "fa-door-open",
+                procedimento: "Parametrização canal verde.",
+                generator: {
+                    fields: [
+                        { id: 'cli_name', label: 'Nome do Cliente' },
+                        { id: 'transportadora', label: 'Transportadora' }
+                    ],
+                    template: (d) => `Assunto: Carga Liberada - Solicitação de Frete\n\nOlá ${d.cli_name},\n\nSua carga foi liberada (Canal Verde)! Já acionamos a transportadora ${d.transportadora}.\n\nPor favor, providenciar o pagamento do frete rodoviário conforme anexo para agendarmos o carregamento.\n\nGrato,\nEquipe Kaizen`
+                }
+            },
+            {
+                title: "Carga entregue",
+                shortDesc: "Conclusão do transporte.",
+                icon: "fa-truck",
+                procedimento: "Conferência de canhoto de entrega.",
+                generator: {
+                    fields: [
+                        { id: 'cli_name', label: 'Nome do Cliente' },
+                        { id: 'ref_processo', label: 'Ref. Processo' }
+                    ],
+                    template: (d) => `Assunto: Fechamento Final do Processo ${d.ref_processo}\n\nPrezado ${d.cli_name},\n\nConfirmamos a entrega da carga.\n\nSegue anexo o Fechamento Final de Custos e cobrança de saldo de armazenagem (se houver).\n\nFoi um prazer atendê-los neste processo.\n\nAtenciosamente,\nEquipe Kaizen`
+                }
+            }
+        ];
+
+        // --- ROTA FCL (Container) ---
+        const dataFCL = [
+            {
+                title: "Pedido aprovado",
+                shortDesc: "Início do processo.",
+                icon: "fa-check-circle",
+                procedimento: "Análise inicial.",
+                generator: null
+            },
+            {
+                title: "PI validada pelo operacional",
+                shortDesc: "Validação interna.",
+                icon: "fa-file-signature",
+                procedimento: "Validação de NCM e Prazos.",
+                generator: {
+                    fields: [
+                        { id: 'cli_name', label: 'Nome do Cliente' },
+                        { id: 'pi_num', label: 'PI Número' }
+                    ],
+                    template: (d) => `Assunto: Validação PI ${d.pi_num}\n\nPrezado ${d.cli_name},\n\nSegue PI validada para assinatura. Após o retorno, solicitaremos o fechamento do Câmbio 1.\n\nNo aguardo.\n\nAtt,\nKaizen`
+                }
+            },
+            {
+                title: "Câmbio 01 pago",
+                shortDesc: "Pagamento inicial.",
+                icon: "fa-money-bill-wave",
+                procedimento: "Envio de Swift.",
+                generator: {
+                    fields: [
+                        { id: 'supp_name', label: 'Fornecedor' },
+                        { id: 'ref_po', label: 'PO Reference' }
+                    ],
+                    template: (d) => `Subject: Deposit Payment Proof - ${d.ref_po}\n\nDear ${d.supp_name},\n\nPlease find attached the contract exchange/swift regarding the deposit for PO ${d.ref_po}.\n\nPlease proceed with production.\n\nRegards,\nKaizen Team`
+                }
+            },
+            {
+                title: "Aguardando embarque",
+                shortDesc: "Seguro, Correção e Câmbio.",
+                icon: "fa-clock",
+                procedimento: "Verificações pré-embarque.",
+                generator: {
+                    fields: [
+                        { id: 'cli_name', label: 'Nome do Cliente' },
+                        { id: 'broker_email', label: 'Email Corretora' },
+                        { id: 'ref_booking', label: 'Ref. Booking' }
+                    ],
+                    template: (d) => `Assunto: Instruções Pré-Embarque - Booking ${d.ref_booking}\n\nOlá,\n\nEste email serve para três finalidades:\n\n1. Envio da cotação à corretora (${d.broker_email}) para emissão de apólice.\n2. Solicitação de correção na fatura do frete marítimo (se aplicável).\n3. Solicitação de fechamento do Câmbio 2 ao cliente ${d.cli_name}.\n\nSeguem documentos anexos.\n\nAtt,\nEquipe Kaizen`
+                }
+            },
+            {
+                title: "Atracou",
+                shortDesc: "Chegada no porto.",
+                icon: "fa-anchor",
+                procedimento: "Navio atracado.",
+                generator: {
+                    fields: [
+                        { id: 'cli_name', label: 'Nome do Cliente' },
+                        { id: 'valor_frete', label: 'Valor Frete Marítimo' }
+                    ],
+                    template: (d) => `Assunto: Navio Atracado - Pagamento de Frete\n\nPrezado ${d.cli_name},\n\nO navio atracou. Para liberação do BL, necessitamos do pagamento do frete marítimo no valor de ${d.valor_frete}.\n\nDados bancários em anexo.\n\nAtt,\nEquipe Kaizen`
+                }
+            },
+            {
+                title: "Presença de carga confirmada",
+                shortDesc: "Confirmação física.",
+                icon: "fa-check-double",
+                procedimento: "Carga em solo.",
+                generator: {
+                    fields: [
+                        { id: 'cli_name', label: 'Nome do Cliente' },
+                        { id: 'valor_imposto', label: 'Total Impostos/Numerário' }
+                    ],
+                    template: (d) => `Assunto: Presença Confirmada - Numerário\n\nOlá ${d.cli_name},\n\nA presença de carga foi confirmada no sistema. Favor providenciar o numerário de R$ ${d.valor_imposto} para registro da DI.\n\nUrgente para evitar armazenagem extra.\n\nAtt,\nKaizen`
+                }
+            },
+            {
+                title: "Carga Coletada",
+                shortDesc: "Saída do terminal.",
+                icon: "fa-truck-loading",
+                procedimento: "Carregamento efetuado.",
+                generator: {
+                    fields: [
+                        { id: 'cli_name', label: 'Nome do Cliente' },
+                        { id: 'valor_armazenagem', label: 'Valor Armazenagem' }
+                    ],
+                    template: (d) => `Assunto: Carga Coletada - Pagamento Armazenagem\n\nPrezado ${d.cli_name},\n\nSua carga foi coletada do terminal. Segue boleto/fatura da armazenagem no valor de ${d.valor_armazenagem} para reembolso/pagamento imediato.\n\nAtt,\nEquipe Kaizen`
+                }
+            },
+            {
+                title: "Carga entregue",
+                shortDesc: "Finalização.",
+                icon: "fa-truck-ramp-box",
+                procedimento: "Processo encerrado.",
+                generator: {
+                    fields: [
+                        { id: 'cli_name', label: 'Nome do Cliente' },
+                        { id: 'po_ref', label: 'Ref PO' }
+                    ],
+                    template: (d) => `Assunto: Entrega Concluída - PO ${d.po_ref}\n\nPrezado ${d.cli_name},\n\nConfirmamos a entrega. Seguem em anexo:\n1. Solicitação de pgto Frete Rodoviário.\n2. Fechamento Final do processo.\n\nObrigado pela parceria!\n\nAtt,\nEquipe Kaizen`
+                }
+            }
+        ];
+
+        // ---------------------------------------------------------
+        // LÓGICA DO SISTEMA
+        // ---------------------------------------------------------
+
+        let currentTab = 'bbk';
+        let currentModalData = null; // Armazena dados do modal aberto
+
+        function renderTimeline(data) {
+            const container = document.getElementById('content-area');
+            container.innerHTML = ''; 
+
+            data.forEach((step, index) => {
+                const sideClass = index % 2 === 0 ? 'step-left' : 'step-right';
+                
+                const html = `
+                    <div class="timeline-step" onclick="openModal(${index})">
+                        <div class="step-icon">
+                            <i class="fas ${step.icon}"></i>
+                        </div>
+                        <div class="step-card ${sideClass}">
+                            <h3 class="text-xl font-bold mb-1">${step.title}</h3>
+                            <p class="text-sm">${step.shortDesc}</p>
+                            <span class="inline-block mt-3 text-xs font-semibold uppercase tracking-wide">
+                                Ver Detalhes <i class="fas fa-arrow-right ml-1"></i>
+                            </span>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const btnBBK = document.getElementById('btn-bbk');
+            const btnFCL = document.getElementById('btn-fcl');
+
+            if (tab === 'bbk') {
+                btnBBK.className = "px-8 py-3 rounded-full font-semibold transition-all duration-300 shadow-md tab-active";
+                btnFCL.className = "px-8 py-3 rounded-full font-semibold transition-all duration-300 shadow-md tab-inactive";
+                renderTimeline(dataBBK);
+            } else {
+                btnBBK.className = "px-8 py-3 rounded-full font-semibold transition-all duration-300 shadow-md tab-inactive";
+                btnFCL.className = "px-8 py-3 rounded-full font-semibold transition-all duration-300 shadow-md tab-active";
+                renderTimeline(dataFCL);
+            }
+        }
+
+        function openModal(index) {
+            const data = currentTab === 'bbk' ? dataBBK : dataFCL;
+            currentModalData = data[index]; // Salva item atual para uso no gerador
+
+            document.getElementById('modal-title').innerText = currentModalData.title;
+            document.getElementById('modal-icon').className = `fas ${currentModalData.icon} text-2xl`;
+
+            // Construção do HTML do Gerador (Inputs)
+            let generatorHtml = '';
+            if (currentModalData.generator) {
+                // Cria inputs baseados nos campos definidos
+                const inputs = currentModalData.generator.fields.map(field => `
+                    <div class="mb-3">
+                        <label class="gen-label">${field.label}</label>
+                        <input type="text" id="gen-${field.id}" class="gen-input" placeholder="...">
+                    </div>
+                `).join('');
+
+                generatorHtml = `
+                    <div class="bg-gray-50 p-4 rounded border border-gray-100">
+                        ${inputs}
+                        <button onclick="generateEmailText()" class="mt-2 w-full py-2 bg-[#CC4C00] hover:bg-[#E65D00] text-white rounded font-semibold transition-colors">
+                            <i class="fas fa-magic mr-2"></i> Gerar Email
+                        </button>
+                    </div>
+                    
+                    <!-- Área de Resultado (Oculta inicialmente) -->
+                    <div id="email-result-area" class="hidden mt-4 animate-fade-in">
+                        <label class="gen-label">Texto do Email:</label>
+                        <textarea id="email-output" class="w-full h-40 p-3 mt-1 border border-gray-200 rounded text-sm text-[#2E4A68] bg-white focus:outline-none" readonly></textarea>
+                        <button onclick="copyToClipboard()" id="btn-copy" class="mt-2 w-full py-2 border border-[#0A2342] text-[#0A2342] hover:bg-[#f1f5f9] rounded font-semibold transition-colors">
+                            <i class="fas fa-copy mr-2"></i> Copiar Texto
+                        </button>
+                    </div>
+                `;
+            } else {
+                generatorHtml = `
+                    <div class="text-center py-8 text-gray-400 italic">
+                        <i class="fas fa-ban mb-2 text-2xl"></i><br>
+                        Nenhum gerador de email configurado para esta etapa.
+                    </div>
+                `;
+            }
+
+            const modalBody = document.getElementById('modal-body-container');
+            modalBody.innerHTML = `
+                <div class="flex border-b border-gray-200 mb-6">
+                    <button onclick="switchModalTab('proc')" id="tab-proc" class="w-1/2 py-3 text-center font-semibold border-b-2 border-[#CC4C00] text-[#0A2342] transition-colors">
+                        Procedimento
+                    </button>
+                    <button onclick="switchModalTab('email')" id="tab-email" class="w-1/2 py-3 text-center font-semibold border-b-2 border-transparent text-gray-400 hover:text-[#CC4C00] transition-colors">
+                        Gerador de Email
+                    </button>
+                </div>
+
+                <div id="content-proc" class="block animate-fade-in">
+                    <p class="text-sm text-gray-400 font-light italic mb-2">Detalhes do procedimento operacional:</p>
+                    <div class="text-[#2E4A68] bg-gray-50 p-4 rounded border border-gray-100 min-h-[100px]">
+                        ${currentModalData.procedimento || "Em branco..."}
+                    </div>
+                </div>
+
+                <div id="content-email" class="hidden animate-fade-in">
+                    ${generatorHtml}
+                </div>
+            `;
+
+            const modal = document.getElementById('modal');
+            modal.classList.add('active');
+        }
+
+        // Função que pega os valores dos inputs e joga no template
+        function generateEmailText() {
+            if (!currentModalData || !currentModalData.generator) return;
+
+            const values = {};
+            // Coleta valores pelo ID
+            currentModalData.generator.fields.forEach(field => {
+                const input = document.getElementById(`gen-${field.id}`);
+                values[field.id] = input ? input.value : '';
+            });
+
+            // Gera o texto usando a função de template
+            const finalBody = currentModalData.generator.template(values);
+
+            // Exibe resultado
+            const resultArea = document.getElementById('email-result-area');
+            const output = document.getElementById('email-output');
+            
+            resultArea.classList.remove('hidden');
+            output.value = finalBody;
+        }
+
+        function copyToClipboard() {
+            const copyText = document.getElementById("email-output");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); 
+            navigator.clipboard.writeText(copyText.value);
+            
+            const btn = document.getElementById('btn-copy');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check mr-2"></i> Copiado!';
+            btn.classList.add('bg-green-50', 'text-green-600', 'border-green-600');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHtml;
+                btn.classList.remove('bg-green-50', 'text-green-600', 'border-green-600');
+            }, 2000);
+        }
+
+        window.switchModalTab = function(tabName) {
+            const tabProc = document.getElementById('tab-proc');
+            const tabEmail = document.getElementById('tab-email');
+            const contentProc = document.getElementById('content-proc');
+            const contentEmail = document.getElementById('content-email');
+
+            if (tabName === 'proc') {
+                tabProc.classList.add('border-[#CC4C00]', 'text-[#0A2342]');
+                tabProc.classList.remove('border-transparent', 'text-gray-400');
+                tabEmail.classList.add('border-transparent', 'text-gray-400');
+                tabEmail.classList.remove('border-[#CC4C00]', 'text-[#0A2342]');
+                contentProc.classList.remove('hidden');
+                contentEmail.classList.add('hidden');
+            } else {
+                tabEmail.classList.add('border-[#CC4C00]', 'text-[#0A2342]');
+                tabEmail.classList.remove('border-transparent', 'text-gray-400');
+                tabProc.classList.add('border-transparent', 'text-gray-400');
+                tabProc.classList.remove('border-[#CC4C00]', 'text-[#0A2342]');
+                contentEmail.classList.remove('hidden');
+                contentProc.classList.add('hidden');
+            }
+        }
+
+        function closeModal(event) {
+            if (event && !event.target.classList.contains('modal-backdrop')) return;
+            document.getElementById('modal').classList.remove('active');
+            currentModalData = null;
+        }
+
+        // Inicializa
+        switchTab('bbk');
+
+    </script>
+</body>
+</html>
